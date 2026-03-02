@@ -5961,11 +5961,10 @@
     <Image Include="Durango\WideLogo.png">
       <Filter>Durango</Filter>
     </Image>
+    <Image Include="icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Xbox\MinecraftWindows.rc">
-      <Filter>Windows</Filter>
-    </ResourceCompile>
+    <ResourceCompile Include="app_icon.rc" />
   </ItemGroup>
   <ItemGroup>
     <Object Include="PS3\SPU_Tasks\ObjFiles\Release\ChunkUpdate.ppu.o">

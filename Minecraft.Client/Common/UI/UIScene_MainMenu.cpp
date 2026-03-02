@@ -6,6 +6,10 @@
 #include "..\..\MinecraftServer.h"
 #include "UI.h"
 #include "UIScene_MainMenu.h"
+#ifdef _WINDOWS64
+#include "AchievementScreen.h"
+#include "StatsCounter.h"
+#endif
 #ifdef __ORBIS__
 #include <error_dialog.h>
 #endif
@@ -279,6 +283,8 @@ void UIScene_MainMenu::handleInput(int iPad, int key, bool repeat, bool pressed,
 
 void UIScene_MainMenu::handlePress(F64 controlId, F64 childId)
 {
+    printf("[DBG] handlePress controlId=%d childId=%d\n", (int)controlId, (int)childId);
+
 	int primaryPad = ProfileManager.GetPrimaryPad();
 	
 	int (*signInReturnedFunc) (LPVOID,const bool, const int iPad) = NULL;
@@ -942,7 +948,11 @@ int UIScene_MainMenu::Achievements_SignInReturned(void *pParam,bool bContinue,in
 		// 4J-JEV: We only need to update rich-presence if the sign-in status changes.
 		ProfileManager.SetCurrentGameActivity(iPad, CONTEXT_PRESENCE_MENUS, false);
 
+#ifdef _WINDOWS64
+		pClass->RunAchievements(iPad);
+#else
 		XShowAchievementsUI( ProfileManager.GetPrimaryPad() );
+#endif
 	}
 	else
 	{
@@ -1908,7 +1918,28 @@ void UIScene_MainMenu::tick()
 
 void UIScene_MainMenu::RunAchievements(int iPad)
 {
-#if TO_BE_IMPLEMENTED
+#ifdef _WINDOWS64
+    printf("[DBG] RunAchievements called\n");
+    if(ProfileManager.IsGuest(iPad))
+    {
+        printf("[DBG] IsGuest - showing message\n");
+        UINT uiIDA[1];
+        uiIDA[0]=IDS_OK;
+        ui.RequestMessageBox(IDS_PRO_GUESTPROFILE_TITLE, IDS_PRO_GUESTPROFILE_TEXT, uiIDA, 1);
+    }
+    else
+    {
+        printf("[DBG] Getting minecraft instance\n");
+        Minecraft *minecraft = Minecraft::GetInstance();
+        printf("[DBG] minecraft=%p\n", minecraft);
+        if (minecraft)
+        {
+            printf("[DBG] Calling setScreen\n");
+            minecraft->setScreen(new AchievementScreen(new StatsCounter()));
+            printf("[DBG] setScreen returned\n");
+        }
+    }
+#elif TO_BE_IMPLEMENTED
 	UINT uiIDA[1];
 	uiIDA[0]=IDS_OK;
 

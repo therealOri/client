@@ -60,7 +60,7 @@ wstring Achievement::getDescription()
 {
 	if (descFormatter != NULL) 
 	{
-		return descFormatter->format(desc);
+		return desc;
 	}
 	return desc;
 }

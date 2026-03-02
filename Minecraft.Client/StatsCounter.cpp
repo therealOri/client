@@ -34,6 +34,11 @@ StatsCounter::StatsCounter()
 
 void StatsCounter::award(Stat* stat, unsigned int difficulty, unsigned int count)
 {
+	printf("[StatsCounter] award(): %ls | isAchievement: %s | difficulty: %u | count: %u\n",
+        stat->name.c_str(),
+        stat->isAchievement() ? "YES" : "NO",
+        difficulty,
+        count);
 #ifndef _DURANGO
 	if( stat->isAchievement() )
 		difficulty = 0;
@@ -204,10 +209,12 @@ void StatsCounter::save(int player, bool force)
 {
 #ifndef _DURANGO
 	// 4J-PB - If this is the trial game, don't save any stats
+#ifndef _WINDOWS64
 	if(!ProfileManager.IsFullVersion())
 	{
 		return;
 	}
+#endif
 
 	//Check we're going to have enough room to store all possible stats
 	unsigned int uiTotalStatsSize = (Stats::all->size() * 4 * sizeof(unsigned short)) - (Achievements::achievements->size() * 3 * sizeof(unsigned short)) + (LARGE_STATS_COUNT*4*(sizeof(unsigned int)-sizeof(unsigned short)));
@@ -302,6 +309,7 @@ void StatsCounter::setLeaderboardRating(XUSER_PROPERTY* prop, LONGLONG value)
 void StatsCounter::flushLeaderboards()
 {
 #ifndef _DURANGO
+#ifndef _WINDOWS64
 	if( LeaderboardManager::Instance()->OpenSession() )
 	{
 		writeStats();
@@ -310,18 +318,17 @@ void StatsCounter::flushLeaderboards()
 	else
 	{
 		app.DebugPrintf("Failed to open a session in order to write to leaderboard\n");
-
-		// 4J-JEV: If user was not signed in it would hit this.
-		//assert(false);// && "Failed to open a session in order to write to leaderboard");
 	}
 
 	modifiedBoards = 0;
+#endif
 #endif
 }
 
 void StatsCounter::saveLeaderboards()
 {
 #ifndef _DURANGO
+#ifndef _WINDOWS64
 	// 4J-PB - If this is the trial game, no writing leaderboards
 	if(!ProfileManager.IsFullVersion())
 	{
@@ -336,12 +343,10 @@ void StatsCounter::saveLeaderboards()
 	else
 	{
 		app.DebugPrintf("Failed to open a session in order to write to leaderboard\n");
-
-		// 4J-JEV: If user was not signed in it would hit this.
-		//assert(false);// && "Failed to open a session in order to write to leaderboard");
 	}
 
 	modifiedBoards = 0;
+#endif
 #endif
 }
 

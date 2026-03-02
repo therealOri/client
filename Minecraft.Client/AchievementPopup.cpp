@@ -25,7 +25,12 @@ AchievementPopup::AchievementPopup(Minecraft *mc)
 void AchievementPopup::popup(Achievement *ach)
 {
     title = I18n::get(L"achievement.get");
-    desc = ach->name;
+	if (title == L"achievement.get")
+    title = L"Achievement Get!";
+
+    desc = I18n::get(ach->name);
+	if (desc == ach->name)
+    desc = ach->getDescription();
     startTime = System::currentTimeMillis();
     this->ach = ach;
     isHelper = false;
@@ -69,7 +74,7 @@ void AchievementPopup::prepareWindow()
 void AchievementPopup::render()
 {
 // 4J Unused
-#if 0
+
     if (Minecraft::warezTime > 0)
 	{
         glDisable(GL_DEPTH_TEST);
@@ -115,17 +120,17 @@ void AchievementPopup::render()
 
     int xx = width - 160;
     int yy = 0 - (int) (yo * 36);
-    int tex = mc->textures->loadTexture(L"/achievement/bg.png");
-    glColor4f(1, 1, 1, 1);
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, tex);
+	mc->textures->bindTexture(L"/achievement/bg.png");
+    glColor4f(1, 1, 1, 1);
     glDisable(GL_LIGHTING);
 
     blit(xx, yy, 96, 202, 160, 32);
 
     if (isHelper)
 	{
-        mc->font->drawWordWrap(desc, xx + 30, yy + 7, 120, 0xffffffff);
+        mc->font->draw(title, xx + 30, yy + 7, 0xffffff00);
+        mc->font->draw(desc, xx + 30, yy + 18, 0xffffffff);
     }
 	else
 	{
@@ -147,5 +152,5 @@ void AchievementPopup::render()
 
     glDepthMask(true);
     glEnable(GL_DEPTH_TEST);
-#endif
+
 }

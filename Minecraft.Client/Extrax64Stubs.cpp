@@ -20,6 +20,8 @@
 #include "StatsCounter.h"
 #include "Windows64\Social\SocialManager.h"
 #include "Windows64\Sentient\DynamicConfigurations.h"
+#include "AchievementScreen.h"
+#include "Minecraft.h"
 #elif defined __PSVITA__
 #include "PSVita\Sentient\SentientManager.h"
 #include "StatsCounter.h"
@@ -76,7 +78,17 @@ DWORD XShowPartyUI(DWORD dwUserIndex) { return 0; }
 DWORD XShowFriendsUI(DWORD dwUserIndex) { return 0; }
 HRESULT XPartyGetUserList(XPARTY_USER_LIST *pUserList) { return S_OK; }
 DWORD XContentGetThumbnail(DWORD dwUserIndex, const XCONTENT_DATA *pContentData,  PBYTE pbThumbnail,  PDWORD pcbThumbnail,  PXOVERLAPPED *pOverlapped) { return 0; }
-void XShowAchievementsUI(int i) {}
+void XShowAchievementsUI(int i)
+{
+	
+	Minecraft *minecraft = Minecraft::GetInstance();
+    if (minecraft && i >= 0 && i < 4 && minecraft->stats[i] != NULL)
+	{
+		minecraft->setScreen(NULL);
+		minecraft->setScreen(new AchievementScreen(minecraft->stats[i]));
+	}
+       
+}
 DWORD XBackgroundDownloadSetMode(XBACKGROUND_DOWNLOAD_MODE Mode) { return 0; }
 
 #ifndef _DURANGO
@@ -903,7 +915,7 @@ wstring				C_4JProfile::GetDisplayName(int iPad)
 	return displayName;
 }
 #endif
-bool				C_4JProfile::IsFullVersion() { return s_bProfileIsFullVersion; }
+bool				C_4JProfile::IsFullVersion() { return true; }
 void				C_4JProfile::SetSignInChangeCallback(void ( *Func)(LPVOID, bool, unsigned int),LPVOID lpParam) {}
 void				C_4JProfile::SetNotificationsCallback(void ( *Func)(LPVOID, DWORD, unsigned int),LPVOID lpParam) {}
 bool				C_4JProfile::RegionIsNorthAmerica(void) { return false; }
@@ -924,6 +936,10 @@ int					C_4JProfile::SetOldProfileVersionCallback(int( *Func)(LPVOID,unsigned ch
 // To store the dashboard preferences for controller flipped, etc.
 C_4JProfile::PROFILESETTINGS ProfileSettingsA[XUSER_MAX_COUNT];
 
+#define MAX_AWARDS 32
+
+static bool s_awardsUnlocked[XUSER_MAX_COUNT][MAX_AWARDS] = {};
+
 C_4JProfile::PROFILESETTINGS *	C_4JProfile::GetDashboardProfileSettings(int iPad) { return &ProfileSettingsA[iPad]; }
 void				C_4JProfile::WriteToProfile(int iQuadrant, bool bGameDefinedDataChanged, bool bOverride5MinuteLimitOnProfileWrites) {}
 void				C_4JProfile::ForceQueuedProfileWrites(int iPad) {}
@@ -941,9 +957,24 @@ void				C_4JProfile::RegisterAward(int iAwardNumber,int iGamerconfigID, eAwardTy
 	CXuiStringTable*pStringTable, int iTitleStr, int iTextStr, int iAcceptStr, char *pszThemeName, unsigned int ulThemeSize) {}
 int					C_4JProfile::GetAwardId(int iAwardNumber) { return 0; }
 eAwardType			C_4JProfile::GetAwardType(int iAwardNumber) { return eAwardType_Achievement; }
-bool				C_4JProfile::CanBeAwarded(int iQuadrant, int iAwardNumber) { return false; }
-void				C_4JProfile::Award(int iQuadrant, int iAwardNumber, bool bForce) {}
-bool				C_4JProfile::IsAwardsFlagSet(int iQuadrant, int iAward) { return false; }
+bool C_4JProfile::CanBeAwarded(int iQuadrant, int iAwardNumber)
+{
+    if (iQuadrant < 0 || iQuadrant >= XUSER_MAX_COUNT) return false;
+    if (iAwardNumber < 0 || iAwardNumber >= MAX_AWARDS) return false;
+    return !s_awardsUnlocked[iQuadrant][iAwardNumber];
+}
+void C_4JProfile::Award(int iQuadrant, int iAwardNumber, bool bForce)
+{
+    if (iQuadrant < 0 || iQuadrant >= XUSER_MAX_COUNT) return;
+    if (iAwardNumber < 0 || iAwardNumber >= MAX_AWARDS) return;
+    s_awardsUnlocked[iQuadrant][iAwardNumber] = true;
+}
+bool C_4JProfile::IsAwardsFlagSet(int iQuadrant, int iAward)
+{
+    if (iQuadrant < 0 || iQuadrant >= XUSER_MAX_COUNT) return false;
+    if (iAward < 0 || iAward >= MAX_AWARDS) return false;
+    return s_awardsUnlocked[iQuadrant][iAward];
+}
 void				C_4JProfile::RichPresenceInit(int iPresenceCount, int iContextCount) {}
 void				C_4JProfile::RegisterRichPresenceContext(int iGameConfigContextID) {}
 void				C_4JProfile::SetRichPresenceContextValue(int iPad,int iContextID, int iVal) {}

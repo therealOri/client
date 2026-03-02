@@ -9,6 +9,8 @@
 #include "..\Minecraft.World\net.minecraft.world.level.h"
 #include "..\Minecraft.World\net.minecraft.stats.h"
 #include "..\Minecraft.Client\LocalPlayer.h"
+#include "AchievementScreen.h"
+#include "StatsScreen.h"
 
 PauseScreen::PauseScreen()
 {
@@ -65,11 +67,11 @@ void PauseScreen::buttonClicked(Button button)
 
     if (button.id == 5)
 	{
-//        minecraft->setScreen(new AchievementScreen(minecraft->stats));	// 4J TODO - put back
+		minecraft->setScreen(new AchievementScreen(minecraft->stats[button.id]));	// 4J TODO - put back
     }
     if (button.id == 6)
 	{
-//        minecraft->setScreen(new StatsScreen(this, minecraft->stats));	// 4J TODO - put back
+		minecraft->setScreen(new StatsScreen(this, minecraft->stats[button.id]));	// 4J TODO - put back
     }
 }
 

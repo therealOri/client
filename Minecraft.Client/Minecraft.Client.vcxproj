@@ -590,6 +590,7 @@
     <LinkIncremental>true</LinkIncremental>
     <ImageXexOutput>$(OutDir)$(ProjectName)_D.xex</ImageXexOutput>
     <IncludePath>$(ProjectDir)\..\Minecraft.World\x64headers;$(ProjectDir)\Xbox\Sentient\Include;$(IncludePath)</IncludePath>
+    <TargetName>Minecraft</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ContentPackage_Vita|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -35485,6 +35486,7 @@ xcopy /q /y /i /s /e $(ProjectDir)Durango\CU  $(LayoutDir)Image\Loose\CU</Comman
   </ItemGroup>
   <ItemGroup>
     <Image Include="Durango\WideLogo.png" />
+    <Image Include="icon.ico" />
     <Image Include="Xbox\MinecraftWindows.ico">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ContentPackage|Durango'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='CONTENTPACKAGE_SYMBOLS|Durango'">true</ExcludedFromBuild>
@@ -35507,23 +35509,7 @@ xcopy /q /y /i /s /e $(ProjectDir)Durango\CU  $(LayoutDir)Image\Loose\CU</Comman
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Xbox\MinecraftWindows.rc">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ContentPackage|Xbox 360'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='CONTENTPACKAGE_SYMBOLS|Xbox 360'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseForArt|Xbox 360'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ContentPackage_NO_TU|Xbox 360'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Xbox 360'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Xbox 360'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ContentPackage_Vita|Xbox 360'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ContentPackage|Durango'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='CONTENTPACKAGE_SYMBOLS|Durango'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseForArt|Durango'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ContentPackage_NO_TU|Durango'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugContentPackage|Durango'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Durango'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Durango'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ContentPackage_Vita|Durango'">true</ExcludedFromBuild>
-    </ResourceCompile>
+    <ResourceCompile Include="app_icon.rc" />
   </ItemGroup>
   <ItemGroup>
     <Object Include="PS3\SPU_Tasks\ObjFiles\ContentPackage\ChunkUpdate.ppu.o">

@@ -157,8 +157,6 @@ void AchievementScreen::renderLabels()
 
 void AchievementScreen::renderBg(int xm, int ym, float a)
 {
-	// 4J Unused
-#if 0
     int xScroll = Mth::floor(xScrollO + (xScrollP - xScrollO) * a);
     int yScroll = Mth::floor(yScrollO + (yScrollP - yScrollO) * a);
 
@@ -168,8 +166,7 @@ void AchievementScreen::renderBg(int xm, int ym, float a)
     if (yScroll >= yMax) yScroll = yMax - 1;
 
 
-    int terrainTex = minecraft->textures->loadTexture(L"/terrain.png");
-    int tex = minecraft->textures->loadTexture(L"/achievement/bg.png");
+    // Textures bound inline at usage sites via bindTexture()
 
     int xo = (width - imageWidth) / 2;
     int yo = (height - imageHeight) / 2;
@@ -189,7 +186,7 @@ void AchievementScreen::renderBg(int xm, int ym, float a)
         glEnable(GL_RESCALE_NORMAL);
         glEnable(GL_COLOR_MATERIAL);
 
-        minecraft->textures->bind(terrainTex);
+        minecraft->textures->bindTexture(L"/terrain.png");
 
         int leftTile = (xScroll + EDGE_VALUE_X) >> 4;
         int topTile = (yScroll + EDGE_VALUE_Y) >> 4;
@@ -201,6 +198,16 @@ void AchievementScreen::renderBg(int xm, int ym, float a)
         const int ironLevel = (Achievements::ACHIEVEMENT_HEIGHT_POSITION * 9) / 10;
         const int diamondLevel = (Achievements::ACHIEVEMENT_HEIGHT_POSITION * 19) / 10;
         const int bedrockLevel = (Achievements::ACHIEVEMENT_HEIGHT_POSITION * 31) / 10;
+
+        // Standard terrain.png tile indices (16-wide atlas, row*16+col)
+        const int TEX_SAND        = 18;  // row 1, col 2
+        const int TEX_BEDROCK     = 17;  // row 1, col 1
+        const int TEX_DIAMOND_ORE = 50;  // row 3, col 2
+        const int TEX_REDSTONE_ORE = 51; // row 3, col 3
+        const int TEX_IRON_ORE    = 33;  // row 2, col 1
+        const int TEX_COAL_ORE    = 34;  // row 2, col 2
+        const int TEX_STONE       = 1;   // row 0, col 1
+        const int TEX_DIRT        = 2;   // row 0, col 2
 
         Random *random = new Random();
 
@@ -216,38 +223,38 @@ void AchievementScreen::renderBg(int xm, int ym, float a)
                 random->setSeed(1234 + leftTile + tileX);
                 random->nextInt();
                 int heightValue = random->nextInt(1 + topTile + tileY) + (topTile + tileY) / 2;
-                int tileType = Tile::sand->tex;
+                int tileType = TEX_SAND;
 
                 if (heightValue > bedrockLevel || (topTile + tileY) == MAX_BG_TILE_Y)
 				{
-                    tileType = Tile::unbreakable->tex;
+                    tileType = TEX_BEDROCK;
                 }
 				else if (heightValue == diamondLevel)
 				{
                     if (random->nextInt(2) == 0)
 					{
-                        tileType = Tile::diamondOre->tex;
+                        tileType = TEX_DIAMOND_ORE;
                     }
 					else
 					{
-                        tileType = Tile::redStoneOre->tex;
+                        tileType = TEX_REDSTONE_ORE;
                     }
                 }
 				else if (heightValue == ironLevel)
 				{
-                    tileType = Tile::ironOre->tex;
+                    tileType = TEX_IRON_ORE;
                 }
 				else if (heightValue == coalLevel)
 				{
-                    tileType = Tile::coalOre->tex;
+                    tileType = TEX_COAL_ORE;
                 }
 				else if (heightValue > rockLevel)
 				{
-                    tileType = Tile::rock->tex;
+                    tileType = TEX_STONE;
 				}
 				else if (heightValue > 0)
 				{
-                    tileType = Tile::dirt->tex;
+                    tileType = TEX_DIRT;
                 }
 
                 this->blit(xBigMap + tileX * 16 - xMod, yBigMap + tileY * 16 - yMod, (tileType % 16) << 4, (tileType >> 4) << 4, 16, 16);
@@ -326,7 +333,7 @@ void AchievementScreen::renderBg(int xm, int ym, float a)
                 glColor4f(br, br, br, 1);
             }
 
-            minecraft->textures->bind(tex);
+            minecraft->textures->bindTexture(L"/achievement/bg.png");
             int xx = xBigMap + x;
             int yy = yBigMap + y;
             if (ach->isGolden())
@@ -364,7 +371,7 @@ void AchievementScreen::renderBg(int xm, int ym, float a)
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glColor4f(1, 1, 1, 1);
-    minecraft->textures->bind(tex);
+    minecraft->textures->bindTexture(L"/achievement/bg.png");
     blit(xo, yo, 0, 0, imageWidth, imageHeight);
 
 
@@ -396,7 +403,7 @@ void AchievementScreen::renderBg(int xm, int ym, float a)
             }
             fillGradient(x - 3, y - 3, x + width + 3, y + height + 3 + 12, 0xc0000000, 0xc0000000);
 
-            font->drawWordWrap(descr, x, y + 12, width, 0xffa0a0a0);
+            font->drawWordWrap(descr, x, y + 12, width, 0xffa0a0a0, font->wordWrapHeight(descr, width));
             if (statsCounter->hasTaken(ach))
 			{
                 font->drawShadow(I18n::get(L"achievement.taken"), x, y + height + 4, 0xff9090ff);
@@ -408,7 +415,7 @@ void AchievementScreen::renderBg(int xm, int ym, float a)
             wstring msg = I18n::get(L"achievement.requires", ach->requires->name);
             int height = font->wordWrapHeight(msg, width);
             fillGradient(x - 3, y - 3, x + width + 3, y + height + 12 + 3, 0xc0000000, 0xc0000000);
-            font->drawWordWrap(msg, x, y + 12, width, 0xff705050);
+            font->drawWordWrap(msg, x, y + 12, width, 0xff705050, font->wordWrapHeight(msg, width));
         }
         font->drawShadow(name, x, y, statsCounter->canTake(ach) ? ach->isGolden() ? 0xffffff80 : 0xffffffff : ach->isGolden() ? 0xff808040 : 0xff808080);
 
@@ -417,7 +424,6 @@ void AchievementScreen::renderBg(int xm, int ym, float a)
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LIGHTING);
     Lighting::turnOff();
-#endif
 }
 
 bool AchievementScreen::isPauseScreen()

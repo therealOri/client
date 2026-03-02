@@ -992,6 +992,7 @@ bool UIScene::allowRepeat(int key)
 
 void UIScene::externalCallback(IggyExternalFunctionCallUTF16 * call)
 {
+	printf("externalCallback: [%S]\n", call->function_name.string);
 	if(wcscmp((wchar_t *)call->function_name.string,L"handlePress")==0)
 	{
 		if(call->num_arguments != 2)

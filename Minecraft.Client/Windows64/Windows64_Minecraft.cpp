@@ -844,6 +844,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	freopen("CONIN$", "r", stdin);
 	std::ios::sync_with_stdio(true);
 #endif
+
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
