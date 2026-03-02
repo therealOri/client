@@ -762,7 +762,7 @@ void LocalPlayer::awardStat(Stat *stat, byteArray param)
         //if (!minecraft->stats[m_iPad]->hasTaken(ach))
 		{
             // 4J-PB - Don't display the java popup
-			//minecraft->achievementPopup->popup(ach);
+			minecraft->achievementPopup->popup(ach);
 
 			// 4J Stu - Added this function in the libraries as some achievements don't get awarded to all players
 			// e.g. Splitscreen players cannot get theme/avatar/gamerpic and Trial players cannot get any
