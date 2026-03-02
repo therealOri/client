@@ -609,6 +609,7 @@ bool LocalPlayer::startCrafting(int x, int y, int z)
 
 bool LocalPlayer::startEnchanting(int x, int y, int z)
 {
+
 	bool success = app.LoadEnchantingMenu(GetXboxPad(), inventory, x, y, z, level );
 	if( success ) ui.PlayUISFX(eSFX_Press);
 	//minecraft.setScreen(new EnchantmentScreen(inventory, level, x, y, z));

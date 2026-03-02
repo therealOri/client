@@ -619,11 +619,11 @@ void UIScene_PauseMenu::handlePress(F64 controlId, F64 childId)
 			Windows::Xbox::ApplicationModel::Help::Show(user);
 		}
 		break;
-#elif TO_BE_IMPLEMENTED
+#endif
 	case BUTTON_PAUSE_ACHIEVEMENTS:
 
 		// guests can't look at achievements
-		if(ProfileManager.IsGuest(pNotifyPressData->UserIndex))
+		if(ProfileManager.IsGuest(m_iPad))
 		{
 			UINT uiIDA[1];
 			uiIDA[0]=IDS_OK;
@@ -631,10 +631,10 @@ void UIScene_PauseMenu::handlePress(F64 controlId, F64 childId)
 		}
 		else
 		{
-			XShowAchievementsUI( pNotifyPressData->UserIndex );
+			XShowAchievementsUI( m_iPad );
 		}
 		break;
-#endif
+
 
 	case BUTTON_PAUSE_HELPANDOPTIONS:
 		ui.NavigateToScene(m_iPad,eUIScene_HelpAndOptionsMenu);	

@@ -25,7 +25,12 @@ AchievementPopup::AchievementPopup(Minecraft *mc)
 void AchievementPopup::popup(Achievement *ach)
 {
     title = I18n::get(L"achievement.get");
-    desc = ach->name;
+	if (title == L"achievement.get")
+    title = L"Achievement Get!";
+
+    desc = I18n::get(ach->name);
+	if (desc == ach->name)
+    desc = ach->getDescription();
     startTime = System::currentTimeMillis();
     this->ach = ach;
     isHelper = false;

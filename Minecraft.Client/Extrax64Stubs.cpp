@@ -80,9 +80,14 @@ HRESULT XPartyGetUserList(XPARTY_USER_LIST *pUserList) { return S_OK; }
 DWORD XContentGetThumbnail(DWORD dwUserIndex, const XCONTENT_DATA *pContentData,  PBYTE pbThumbnail,  PDWORD pcbThumbnail,  PXOVERLAPPED *pOverlapped) { return 0; }
 void XShowAchievementsUI(int i)
 {
+	
 	Minecraft *minecraft = Minecraft::GetInstance();
     if (minecraft && i >= 0 && i < 4 && minecraft->stats[i] != NULL)
-        minecraft->setScreen(new AchievementScreen(minecraft->stats[i]));
+	{
+		minecraft->setScreen(NULL);
+		minecraft->setScreen(new AchievementScreen(minecraft->stats[i]));
+	}
+       
 }
 DWORD XBackgroundDownloadSetMode(XBACKGROUND_DOWNLOAD_MODE Mode) { return 0; }
 
