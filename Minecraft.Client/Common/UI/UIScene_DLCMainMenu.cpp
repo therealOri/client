@@ -58,6 +58,7 @@ UIScene_DLCMainMenu::UIScene_DLCMainMenu(int iPad, void *initData, UILayer *pare
     m_buttonListOffers.addItem(app.GetString(IDS_DLC_MENU_TEXTUREPACKS), e_DLC_TexturePacks);
     m_buttonListOffers.addItem(app.GetString(IDS_DLC_MENU_MASHUPPACKS),  e_DLC_MashupPacks);
 	m_buttonListOffers.addItem("Worlds",  e_DLC_Worlds);
+	m_buttonListOffers.addItem("Mods",  e_DLC_Mods);
     app.AddDLCRequest(e_Marketplace_Content);
     app.StartInstallDLCProcess(iPad);
 
@@ -75,6 +76,7 @@ UIScene_DLCMainMenu::UIScene_DLCMainMenu(int iPad, void *initData, UILayer *pare
         else if (wcscmp(offer.wszType, L"TexturePack") == 0) eType = e_DLC_TexturePacks;
         else if (wcscmp(offer.wszType, L"MashUp")      == 0) eType = e_DLC_MashupPacks;
 		else if (wcscmp(offer.wszType, L"World")      == 0) eType = e_DLC_Worlds;
+		else if (wcscmp(offer.wszType, L"Mod")      == 0) eType = e_DLC_Mods;
 
         CMinecraftApp::RegisterW64DLC(
             eType,

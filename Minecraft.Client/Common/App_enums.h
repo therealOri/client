@@ -534,7 +534,8 @@ enum eDLCContentType
 	e_DLC_TexturePackData, // for the icon, banner and text
 	e_DLC_MAX,
 	e_DLC_NotDefined,
-	e_DLC_Worlds
+	e_DLC_Worlds,
+	e_DLC_Mods
 };
 
 enum eDLCMarketplaceType
