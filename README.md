@@ -1,6 +1,6 @@
 # client
 
-
+this is the client for the minecraft fork.
 
 ## Getting started
 
