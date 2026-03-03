@@ -34,11 +34,11 @@ StatsCounter::StatsCounter()
 
 void StatsCounter::award(Stat* stat, unsigned int difficulty, unsigned int count)
 {
-	printf("[StatsCounter] award(): %ls | isAchievement: %s | difficulty: %u | count: %u\n",
+	/*printf("[StatsCounter] award(): %ls | isAchievement: %s | difficulty: %u | count: %u\n",
         stat->name.c_str(),
         stat->isAchievement() ? "YES" : "NO",
         difficulty,
-        count);
+        count);*/
 #ifndef _DURANGO
 	if( stat->isAchievement() )
 		difficulty = 0;
