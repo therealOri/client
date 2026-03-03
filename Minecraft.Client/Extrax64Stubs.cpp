@@ -2,6 +2,7 @@
 #ifndef __PS3__
 //#include <compressapi.h>
 #endif // __PS3__
+#include <time.h>
 
 #ifdef __PS3__
 #include "PS3\Sentient\SentientManager.h"
@@ -58,11 +59,73 @@ C_4JProfile ProfileManager;
 CSentientManager SentientManager;
 CXuiStringTable StringTable;
 
+
+
 #ifndef _XBOX_ONE
 ATG::XMLParser::XMLParser() {}
 ATG::XMLParser::~XMLParser() {}
 HRESULT    ATG::XMLParser::ParseXMLBuffer( CONST CHAR* strBuffer, UINT uBufferSize ) { return S_OK; }   
 VOID ATG::XMLParser::RegisterSAXCallbackInterface( ISAXCallback *pISAXCallback ) {}
+#endif
+
+#ifdef _WINDOWS64
+static char s_discordUsername[32] = "";
+static ULONGLONG s_discordXuid = 0;
+static struct IDiscordCore *discordCore = NULL;
+
+static void InitDiscordCore()
+{
+	if(discordCore != NULL) return; // already done
+
+	static IDiscordCoreEvents coreEvents;
+	memset(&coreEvents, 0, sizeof(coreEvents));
+
+	struct DiscordCreateParams params;
+	DiscordCreateParamsSetDefault(&params);
+	params.client_id = 1477855587978182828LL;
+	params.flags = DiscordCreateFlags_NoRequireDiscord;
+	params.events = &coreEvents;
+	params.event_data = NULL;
+
+	enum EDiscordResult result = DiscordCreate(DISCORD_VERSION, &params, &discordCore);
+	if(result != DiscordResult_Ok)
+	{
+		printf("DiscordCreate failed: %d\n", result);
+		discordCore = NULL;
+	}
+}
+
+static ULONGLONG DiscordIdToXuid(DiscordSnowflake discordId)
+{
+	return 0xE000000000000000ULL | ((ULONGLONG)discordId & 0x0000FFFFFFFFFFFFULL);
+}
+
+static void InitDiscordIdentity()
+{
+	InitDiscordCore();
+	if(discordCore == NULL) return;
+
+
+	for(int i = 0; i < 100; ++i)
+	{
+		discordCore->run_callbacks(discordCore);
+		Sleep(10);
+
+		struct IDiscordUserManager *userManager = discordCore->get_user_manager(discordCore);
+		if(userManager != NULL)
+		{
+			struct DiscordUser currentUser;
+			enum EDiscordResult userResult = userManager->get_current_user(userManager, &currentUser);
+			if(userResult == DiscordResult_Ok)
+			{
+				strncpy_s(s_discordUsername, sizeof(s_discordUsername), 
+					currentUser.username, _TRUNCATE);
+				s_discordXuid = DiscordIdToXuid(currentUser.id);
+				break;
+			}
+		}
+	}
+}
 #endif
 
 bool	CSocialManager::IsTitleAllowedToPostAnything() { return false; }
@@ -80,14 +143,14 @@ HRESULT XPartyGetUserList(XPARTY_USER_LIST *pUserList) { return S_OK; }
 DWORD XContentGetThumbnail(DWORD dwUserIndex, const XCONTENT_DATA *pContentData,  PBYTE pbThumbnail,  PDWORD pcbThumbnail,  PXOVERLAPPED *pOverlapped) { return 0; }
 void XShowAchievementsUI(int i)
 {
-	
+
 	Minecraft *minecraft = Minecraft::GetInstance();
-    if (minecraft && i >= 0 && i < 4 && minecraft->stats[i] != NULL)
+	if (minecraft && i >= 0 && i < 4 && minecraft->stats[i] != NULL)
 	{
 		minecraft->setScreen(NULL);
 		minecraft->setScreen(new AchievementScreen(minecraft->stats[i]));
 	}
-       
+
 }
 DWORD XBackgroundDownloadSetMode(XBACKGROUND_DOWNLOAD_MODE Mode) { return 0; }
 
@@ -99,35 +162,35 @@ void PIXBeginNamedEvent(int a, char *b, ...)
 {
 #ifdef PS4_USE_PIX_EVENTS
 	char buf[512];
-    va_list args;
-    va_start(args,b);
-    vsprintf(buf,b,args);
+	va_list args;
+	va_start(args,b);
+	vsprintf(buf,b,args);
 	sceRazorCpuPushMarker(buf, 0xffffffff, SCE_RAZOR_MARKER_ENABLE_HUD);
 
 #endif
 #ifdef PS3_USE_PIX_EVENTS
 	char buf[256];
 	wchar_t wbuf[256];
-    va_list args;
-    va_start(args,b);
-    vsprintf(buf,b,args);
+	va_list args;
+	va_start(args,b);
+	vsprintf(buf,b,args);
 	snPushMarker(buf);
 
-// 	mbstowcs(wbuf,buf,256);
-// 	RenderManager.BeginEvent(wbuf);
-    va_end(args);
+	// 	mbstowcs(wbuf,buf,256);
+	// 	RenderManager.BeginEvent(wbuf);
+	va_end(args);
 #endif
 }
 #if 0//__PSVITA__
-	if( PixDepth < 64 )
-	{
-		char buf[512];
-		va_list args;
-		va_start(args,b);
-		vsprintf(buf,b,args);
-		sceRazorCpuPushMarkerWithHud(buf, 0xffffffff, SCE_RAZOR_MARKER_ENABLE_HUD);
-	}
-	PixDepth += 1;
+if( PixDepth < 64 )
+{
+	char buf[512];
+	va_list args;
+	va_start(args,b);
+	vsprintf(buf,b,args);
+	sceRazorCpuPushMarkerWithHud(buf, 0xffffffff, SCE_RAZOR_MARKER_ENABLE_HUD);
+}
+PixDepth += 1;
 #endif
 
 
@@ -138,7 +201,7 @@ void PIXEndNamedEvent()
 #endif
 #ifdef PS3_USE_PIX_EVENTS
 	snPopMarker();
-// 	RenderManager.EndEvent();
+	// 	RenderManager.EndEvent();
 #endif
 #if 0//__PSVITA__
 	if( PixDepth <= 64 )
@@ -212,143 +275,94 @@ D3DXVECTOR3& D3DXVECTOR3::operator += ( CONST D3DXVECTOR3& add ) { x += add.x; y
 
 namespace
 {
-bool s_stubIdentityInitialised = false;
-ULONGLONG s_stubXuidBase = 0;
-char s_stubGamertagA[XUSER_MAX_COUNT][32];
-wchar_t s_stubGamertagW[XUSER_MAX_COUNT][32];
+	bool s_stubIdentityInitialised = false;
+	ULONGLONG s_stubXuidBase = 0;
+	char s_stubGamertagA[XUSER_MAX_COUNT][32];
+	wchar_t s_stubGamertagW[XUSER_MAX_COUNT][32];
 
-DWORD StubSupportedLocalUserMask()
-{
-	DWORD mask = 0;
-	for(unsigned int i = 0; i < XUSER_MAX_COUNT && i < 32; ++i)
+	DWORD StubSupportedLocalUserMask()
 	{
-		mask |= (1u << i);
+		DWORD mask = 0;
+		for(unsigned int i = 0; i < XUSER_MAX_COUNT && i < 32; ++i)
+		{
+			mask |= (1u << i);
+		}
+		return mask;
 	}
-	return mask;
-}
 
-bool StubSupportsLocalUser(DWORD userIndex)
-{
-	return userIndex < XUSER_MAX_COUNT;
-}
-
-DWORD StubClampLocalUserMask(DWORD usersMask)
-{
-	DWORD clampedMask = usersMask & StubSupportedLocalUserMask();
-	if(clampedMask == 0)
+	bool StubSupportsLocalUser(DWORD userIndex)
 	{
-		clampedMask = (1u << 0);
+		return userIndex < XUSER_MAX_COUNT;
 	}
-	return clampedMask;
-}
+
+	DWORD StubClampLocalUserMask(DWORD usersMask)
+	{
+		DWORD clampedMask = usersMask & StubSupportedLocalUserMask();
+		if(clampedMask == 0)
+		{
+			clampedMask = (1u << 0);
+		}
+		return clampedMask;
+	}
+
+
+
+	void EnsureStubIdentity()
+	{
+		if(s_stubIdentityInitialised)
+			return;
 
 #ifdef _WINDOWS64
-static char s_discordUsername[32] = "";
-static ULONGLONG s_discordXuid = 0;
-
-static ULONGLONG DiscordIdToXuid(DiscordSnowflake discordId)
-{
-    return 0xE000000000000000ULL | ((ULONGLONG)discordId & 0x0000FFFFFFFFFFFFULL);
-}
-
-static void InitDiscordIdentity()
-{
-    struct IDiscordCore *core = NULL;
-
-    struct DiscordCreateParams params;
-    DiscordCreateParamsSetDefault(&params);
-    params.client_id = 1477855587978182828LL; // <-- REPLACE WITH YOUR CLIENT ID
-    params.flags = DiscordCreateFlags_NoRequireDiscord;
-
-    enum EDiscordResult result = DiscordCreate(DISCORD_VERSION, &params, &core);
-    if(result != DiscordResult_Ok || core == NULL)
-    {
-        // Discord not running, will fall back to PID name
-        return;
-    }
-
-    // Pump callbacks until we get the current user
-    for(int i = 0; i < 100; ++i)
-    {
-        core->run_callbacks(core);
-        Sleep(10);
-
-        struct IDiscordUserManager *userManager = core->get_user_manager(core);
-        if(userManager != NULL)
-        {
-            struct DiscordUser currentUser;
-            enum EDiscordResult userResult = userManager->get_current_user(userManager, &currentUser);
-            if(userResult == DiscordResult_Ok)
-            {
-                // Truncate to 31 chars to be safe
-                strncpy_s(s_discordUsername, sizeof(s_discordUsername), 
-                          currentUser.username, _TRUNCATE);
-                s_discordXuid = DiscordIdToXuid(currentUser.id);
-                break;
-            }
-        }
-    }
-
-    core->destroy(core);
-}
+		// Try to get Discord identity first
+		if(s_discordXuid == 0)
+		{
+			InitDiscordIdentity();
+		}
 #endif
 
-void EnsureStubIdentity()
-{
-    if(s_stubIdentityInitialised)
-        return;
-
+		DWORD pid = 1;
 #ifdef _WINDOWS64
-    // Try to get Discord identity first
-    if(s_discordXuid == 0)
-    {
-        InitDiscordIdentity();
-    }
+		pid = GetCurrentProcessId();
 #endif
 
-    DWORD pid = 1;
-#ifdef _WINDOWS64
-    pid = GetCurrentProcessId();
-#endif
+		// XUID
+		if(s_discordXuid != 0)
+		{
+			s_stubXuidBase = s_discordXuid;
+		}
+		else
+		{
+			s_stubXuidBase = 0xE000D45200000000ULL | ((ULONGLONG)(pid & 0x00FFFFFF) << 8);
+		}
 
-    // XUID
-    if(s_discordXuid != 0)
-    {
-        s_stubXuidBase = s_discordXuid;
-    }
-    else
-    {
-        s_stubXuidBase = 0xE000D45200000000ULL | ((ULONGLONG)(pid & 0x00FFFFFF) << 8);
-    }
-
-    // Gamertag (narrow)
-    for(unsigned int i = 0; i < XUSER_MAX_COUNT; ++i)
-    {
-        if(s_discordUsername[0] != '\0')
-        {
-            if(i == 0)
-                strcpy_s(s_stubGamertagA[i], sizeof(s_stubGamertagA[i]), s_discordUsername);
-            else
-                sprintf_s(s_stubGamertagA[i], sizeof(s_stubGamertagA[i]), "%s-%u", s_discordUsername, i);
-        }
-        else
-        {
+		// Gamertag (narrow)
+		for(unsigned int i = 0; i < XUSER_MAX_COUNT; ++i)
+		{
+			if(s_discordUsername[0] != '\0')
+			{
+				if(i == 0)
+					strcpy_s(s_stubGamertagA[i], sizeof(s_stubGamertagA[i]), s_discordUsername);
+				else
+					sprintf_s(s_stubGamertagA[i], sizeof(s_stubGamertagA[i]), "%s-%u", s_discordUsername, i);
+			}
+			else
+			{
 #ifdef _WINDOWS64
-            sprintf_s(s_stubGamertagA[i], sizeof(s_stubGamertagA[i]), "Player%u-%u", pid % 10000, i);
+				sprintf_s(s_stubGamertagA[i], sizeof(s_stubGamertagA[i]), "Player%u-%u", pid % 10000, i);
 #else
-            snprintf(s_stubGamertagA[i], sizeof(s_stubGamertagA[i]), "Player%u-%u", pid % 10000, i);
+				snprintf(s_stubGamertagA[i], sizeof(s_stubGamertagA[i]), "Player%u-%u", pid % 10000, i);
 #endif
-        }
-    }
+			}
+		}
 
-    // Gamertag (wide)
-    for(unsigned int i = 0; i < XUSER_MAX_COUNT; ++i)
-    {
-        swprintf(s_stubGamertagW[i], 32, L"%S", s_stubGamertagA[i]);
-    }
+		// Gamertag (wide)
+		for(unsigned int i = 0; i < XUSER_MAX_COUNT; ++i)
+		{
+			swprintf(s_stubGamertagW[i], 32, L"%S", s_stubGamertagA[i]);
+		}
 
-    s_stubIdentityInitialised = true;
-}
+		s_stubIdentityInitialised = true;
+	}
 }
 
 extern bool _bQNetStubIsHost;
@@ -514,21 +528,21 @@ IQNetPlayer *IQNet::GetPlayerByXuid(PlayerUID xuid)
 			continue;
 		}
 
-			IQNetPlayer *localPlayer = &m_player[localUser];
-			PlayerUID localXuidOnline = localPlayer->GetXuid();
+		IQNetPlayer *localPlayer = &m_player[localUser];
+		PlayerUID localXuidOnline = localPlayer->GetXuid();
 #if defined(__PS3__) || defined(__ORBIS__) || defined(__PSVITA__) || defined(_DURANGO)
-			if(xuid == localXuidOnline)
-			{
-				return localPlayer;
-			}
-#else
-			PlayerUID localXuidOffline = localXuidOnline & ~0x100000000ULL;
-			if(xuid == localXuidOnline || xuid == localXuidOffline)
-			{
-				return localPlayer;
-			}
-#endif
+		if(xuid == localXuidOnline)
+		{
+			return localPlayer;
 		}
+#else
+		PlayerUID localXuidOffline = localXuidOnline & ~0x100000000ULL;
+		if(xuid == localXuidOnline || xuid == localXuidOffline)
+		{
+			return localPlayer;
+		}
+#endif
+	}
 
 	return NULL;
 }
@@ -587,10 +601,10 @@ void XSetThreadProcessor(HANDLE a, int b) {}
 // #endif // __PS3__
 
 DWORD XUserGetSigninInfo(
-         DWORD dwUserIndex,
-         DWORD dwFlags,
-         PXUSER_SIGNIN_INFO pSigninInfo
-)
+	DWORD dwUserIndex,
+	DWORD dwFlags,
+	PXUSER_SIGNIN_INFO pSigninInfo
+	)
 {
 	if(pSigninInfo == NULL)
 	{
@@ -623,12 +637,12 @@ DWORD XUserAreUsersFriends( DWORD dwUserIndex, PPlayerUID pXuids, DWORD dwXuidCo
 #if defined __ORBIS__ || defined __PS3__ || defined _XBOX_ONE
 #else
 HRESULT XMemDecompress(
-         XMEMDECOMPRESSION_CONTEXT Context,
-         VOID *pDestination,
-         SIZE_T *pDestSize,
-         CONST VOID *pSource,
-         SIZE_T SrcSize
-)
+	XMEMDECOMPRESSION_CONTEXT Context,
+	VOID *pDestination,
+	SIZE_T *pDestSize,
+	CONST VOID *pSource,
+	SIZE_T SrcSize
+	)
 {
 	memcpy(pDestination, pSource, SrcSize);
 	*pDestSize = SrcSize;
@@ -637,14 +651,14 @@ HRESULT XMemDecompress(
 	/*
 	DECOMPRESSOR_HANDLE Decompressor    = (DECOMPRESSOR_HANDLE)Context;
 	if( Decompress(
-        Decompressor,           //  Decompressor handle
-        (void *)pSource,		//  Compressed data
-        SrcSize,				//  Compressed data size
-        pDestination,			//  Decompressed buffer
-        *pDestSize,				//  Decompressed buffer size
-        pDestSize) )				//  Decompressed data size
+	Decompressor,           //  Decompressor handle
+	(void *)pSource,		//  Compressed data
+	SrcSize,				//  Compressed data size
+	pDestination,			//  Decompressed buffer
+	*pDestSize,				//  Decompressed buffer size
+	pDestSize) )				//  Decompressed data size
 	{
-		return S_OK;
+	return S_OK;
 	}
 	else
 	*/
@@ -654,12 +668,12 @@ HRESULT XMemDecompress(
 }
 
 HRESULT XMemCompress(
-         XMEMCOMPRESSION_CONTEXT Context,
-         VOID *pDestination,
-         SIZE_T *pDestSize,
-         CONST VOID *pSource,
-         SIZE_T SrcSize
-)
+	XMEMCOMPRESSION_CONTEXT Context,
+	VOID *pDestination,
+	SIZE_T *pDestSize,
+	CONST VOID *pSource,
+	SIZE_T SrcSize
+	)
 {
 	memcpy(pDestination, pSource, SrcSize);
 	*pDestSize = SrcSize;
@@ -668,14 +682,14 @@ HRESULT XMemCompress(
 	/*
 	COMPRESSOR_HANDLE Compressor    = (COMPRESSOR_HANDLE)Context;
 	if( Compress(
-			Compressor,                  //  Compressor Handle
-			(void *)pSource,             //  Input buffer, Uncompressed data
-			SrcSize,					 //  Uncompressed data size
-			pDestination,                //  Compressed Buffer
-			*pDestSize,                  //  Compressed Buffer size
-			pDestSize)	)				//  Compressed Data size
+	Compressor,                  //  Compressor Handle
+	(void *)pSource,             //  Input buffer, Uncompressed data
+	SrcSize,					 //  Uncompressed data size
+	pDestination,                //  Compressed Buffer
+	*pDestSize,                  //  Compressed Buffer size
+	pDestSize)	)				//  Compressed Data size
 	{
-		return S_OK;
+	return S_OK;
 	}
 	else
 	*/
@@ -685,19 +699,19 @@ HRESULT XMemCompress(
 }
 
 HRESULT XMemCreateCompressionContext(
-         XMEMCODEC_TYPE CodecType,
-         CONST VOID *pCodecParams,
-         DWORD Flags,
-         XMEMCOMPRESSION_CONTEXT *pContext
-)
+	XMEMCODEC_TYPE CodecType,
+	CONST VOID *pCodecParams,
+	DWORD Flags,
+	XMEMCOMPRESSION_CONTEXT *pContext
+	)
 {
 	/*
 	COMPRESSOR_HANDLE Compressor    = NULL;
 
 	HRESULT hr = CreateCompressor(
-		COMPRESS_ALGORITHM_XPRESS_HUFF, //  Compression Algorithm
-		NULL,                           //  Optional allocation routine
-		&Compressor);                   //  Handle
+	COMPRESS_ALGORITHM_XPRESS_HUFF, //  Compression Algorithm
+	NULL,                           //  Optional allocation routine
+	&Compressor);                   //  Handle
 
 	pContext = (XMEMDECOMPRESSION_CONTEXT *)Compressor;
 	return hr;
@@ -706,19 +720,19 @@ HRESULT XMemCreateCompressionContext(
 }
 
 HRESULT XMemCreateDecompressionContext(
-         XMEMCODEC_TYPE CodecType,
-         CONST VOID *pCodecParams,
-         DWORD Flags,
-         XMEMDECOMPRESSION_CONTEXT *pContext
-)
+	XMEMCODEC_TYPE CodecType,
+	CONST VOID *pCodecParams,
+	DWORD Flags,
+	XMEMDECOMPRESSION_CONTEXT *pContext
+	)
 {
 	/*
 	DECOMPRESSOR_HANDLE  Decompressor    = NULL;
 
 	HRESULT hr = CreateDecompressor(
-		COMPRESS_ALGORITHM_XPRESS_HUFF, //  Compression Algorithm
-		NULL,                           //  Optional allocation routine
-		&Decompressor);                   //  Handle
+	COMPRESS_ALGORITHM_XPRESS_HUFF, //  Compression Algorithm
+	NULL,                           //  Optional allocation routine
+	&Decompressor);                   //  Handle
 
 	pContext = (XMEMDECOMPRESSION_CONTEXT *)Decompressor;
 	return hr;
@@ -728,14 +742,14 @@ HRESULT XMemCreateDecompressionContext(
 
 void XMemDestroyCompressionContext(XMEMCOMPRESSION_CONTEXT Context)
 {
-//	COMPRESSOR_HANDLE Compressor    = (COMPRESSOR_HANDLE)Context;
-//	CloseCompressor(Compressor);
+	//	COMPRESSOR_HANDLE Compressor    = (COMPRESSOR_HANDLE)Context;
+	//	CloseCompressor(Compressor);
 }
 
 void XMemDestroyDecompressionContext(XMEMDECOMPRESSION_CONTEXT Context)
 {
-//	DECOMPRESSOR_HANDLE Decompressor    = (DECOMPRESSOR_HANDLE)Context;
-//	CloseDecompressor(Decompressor);
+	//	DECOMPRESSOR_HANDLE Decompressor    = (DECOMPRESSOR_HANDLE)Context;
+	//	CloseDecompressor(Decompressor);
 }
 #endif
 
@@ -754,13 +768,13 @@ static void *profileData[4];
 static bool s_bProfileIsFullVersion;
 static int s_iPrimaryPad = 0;
 void				C_4JProfile::Initialise( DWORD dwTitleID,
-								DWORD dwOfferID,
-								unsigned short usProfileVersion,
-								UINT uiProfileValuesC,
-								UINT uiProfileSettingsC,
-								DWORD *pdwProfileSettingsA, 
-								int iGameDefinedDataSizeX4,
-								unsigned int *puiGameDefinedDataChangedBitmask)
+											DWORD dwOfferID,
+											unsigned short usProfileVersion,
+											UINT uiProfileValuesC,
+											UINT uiProfileSettingsC,
+											DWORD *pdwProfileSettingsA, 
+											int iGameDefinedDataSizeX4,
+											unsigned int *puiGameDefinedDataChangedBitmask)
 {
 	for( int i = 0; i < 4; i++ )
 	{
@@ -952,33 +966,100 @@ void				*C_4JProfile::GetGameDefinedProfileData(int iQuadrant)
 	return profileData[iQuadrant];
 }
 void				C_4JProfile::ResetProfileProcessState() {}
-void				C_4JProfile::Tick( void ) {}
+void				C_4JProfile::Tick( void ) {
+#ifdef _WINDOWS64
+	printf("Tick called, discordCore=%p\n", (void*)discordCore);
+	if(discordCore != NULL)
+	{
+		discordCore->run_callbacks(discordCore);
+	}
+#endif
+}
 void				C_4JProfile::RegisterAward(int iAwardNumber,int iGamerconfigID, eAwardType eType, bool bLeaderboardAffected, 
-	CXuiStringTable*pStringTable, int iTitleStr, int iTextStr, int iAcceptStr, char *pszThemeName, unsigned int ulThemeSize) {}
+											   CXuiStringTable*pStringTable, int iTitleStr, int iTextStr, int iAcceptStr, char *pszThemeName, unsigned int ulThemeSize) {}
 int					C_4JProfile::GetAwardId(int iAwardNumber) { return 0; }
 eAwardType			C_4JProfile::GetAwardType(int iAwardNumber) { return eAwardType_Achievement; }
 bool C_4JProfile::CanBeAwarded(int iQuadrant, int iAwardNumber)
 {
-    if (iQuadrant < 0 || iQuadrant >= XUSER_MAX_COUNT) return false;
-    if (iAwardNumber < 0 || iAwardNumber >= MAX_AWARDS) return false;
-    return !s_awardsUnlocked[iQuadrant][iAwardNumber];
+	if (iQuadrant < 0 || iQuadrant >= XUSER_MAX_COUNT) return false;
+	if (iAwardNumber < 0 || iAwardNumber >= MAX_AWARDS) return false;
+	return !s_awardsUnlocked[iQuadrant][iAwardNumber];
 }
 void C_4JProfile::Award(int iQuadrant, int iAwardNumber, bool bForce)
 {
-    if (iQuadrant < 0 || iQuadrant >= XUSER_MAX_COUNT) return;
-    if (iAwardNumber < 0 || iAwardNumber >= MAX_AWARDS) return;
-    s_awardsUnlocked[iQuadrant][iAwardNumber] = true;
+	if (iQuadrant < 0 || iQuadrant >= XUSER_MAX_COUNT) return;
+	if (iAwardNumber < 0 || iAwardNumber >= MAX_AWARDS) return;
+	s_awardsUnlocked[iQuadrant][iAwardNumber] = true;
 }
 bool C_4JProfile::IsAwardsFlagSet(int iQuadrant, int iAward)
 {
-    if (iQuadrant < 0 || iQuadrant >= XUSER_MAX_COUNT) return false;
-    if (iAward < 0 || iAward >= MAX_AWARDS) return false;
-    return s_awardsUnlocked[iQuadrant][iAward];
+	if (iQuadrant < 0 || iQuadrant >= XUSER_MAX_COUNT) return false;
+	if (iAward < 0 || iAward >= MAX_AWARDS) return false;
+	return s_awardsUnlocked[iQuadrant][iAward];
 }
 void				C_4JProfile::RichPresenceInit(int iPresenceCount, int iContextCount) {}
 void				C_4JProfile::RegisterRichPresenceContext(int iGameConfigContextID) {}
 void				C_4JProfile::SetRichPresenceContextValue(int iPad,int iContextID, int iVal) {}
-void				C_4JProfile::SetCurrentGameActivity(int iPad,int iNewPresence, bool bSetOthersToIdle) {}
+
+static DiscordTimestamp s_sessionStart = 0;
+
+void				C_4JProfile::SetCurrentGameActivity(int iPad,int iNewPresence, bool bSetOthersToIdle) 
+{
+#ifdef _WINDOWS64
+	printf("SetCurrentGameActivity, iPad: %d iNewPrescene: %d, bSetOthersToIdle: %d\n", iPad, iNewPresence, bSetOthersToIdle);
+
+	InitDiscordCore();
+	if(discordCore == NULL) return;
+
+	struct IDiscordActivityManager *activityManager = discordCore->get_activity_manager(discordCore);
+	if(activityManager == NULL)
+	{
+		printf("ActivityManager is null.");
+		return;
+	}
+
+	struct DiscordActivity activity;
+	memset(&activity, 0, sizeof(activity));
+
+	switch(iNewPresence)
+	{
+	case 1: // Menus
+		strncpy_s(activity.details, sizeof(activity.details), "In Menu", _TRUNCATE);
+		strncpy_s(activity.state,   sizeof(activity.state),   "Idle",    _TRUNCATE);
+		break;
+	case 4: // In-game Online
+		strncpy_s(activity.details, sizeof(activity.details), "Playing Minecraft", _TRUNCATE);
+		strncpy_s(activity.state,   sizeof(activity.state),   "Multiplayer",       _TRUNCATE);
+		break;
+	case 5: // In-game Singleplayer
+		strncpy_s(activity.details, sizeof(activity.details), "Playing Minecraft", _TRUNCATE);
+		strncpy_s(activity.state,   sizeof(activity.state),   "Singleplayer",       _TRUNCATE);
+		break;
+	default:
+		break;
+	}
+
+	strncpy_s(activity.assets.large_image, sizeof(activity.assets.large_image),
+		"icon", _TRUNCATE);
+
+	if(s_sessionStart == 0)
+		s_sessionStart = (DiscordTimestamp)_time64(NULL);
+
+	activity.timestamps.start = s_sessionStart;
+
+	static int s_dummy = 0;
+	activityManager->update_activity(activityManager, &activity, &s_dummy,
+		[](void *data, enum EDiscordResult result) {
+			printf("update_activity result: %d\n", result);
+	});
+
+	for(int i = 0; i < 50; ++i)
+	{
+		discordCore->run_callbacks(discordCore);
+		Sleep(10);
+	}
+#endif
+}
 void				C_4JProfile::DisplayFullVersionPurchase(bool bRequired, int iQuadrant, int iUpsellParam) {}
 void				C_4JProfile::SetUpsellCallback(void ( *Func)(LPVOID lpParam, eUpsellType type, eUpsellResponse response, int iUserData),LPVOID lpParam) {}
 void				C_4JProfile::SetDebugFullOverride(bool bVal) {s_bProfileIsFullVersion = bVal;}
