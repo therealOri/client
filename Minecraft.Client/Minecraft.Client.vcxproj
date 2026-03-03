@@ -4364,6 +4364,7 @@ xcopy /q /y /i /s /e $(ProjectDir)Durango\CU  $(LayoutDir)Image\Loose\CU</Comman
     <ClInclude Include="KeyboardMouseInput.h" />
     <ClInclude Include="Windows64\Network\NetworkPlayerInterface.h" />
     <ClInclude Include="Windows64\Network\P2PConnectionManagerWin.h" />
+    <ClInclude Include="Windows64\Network\WinsockNetLayer.h" />
     <ClInclude Include="Common\Network\NetworkPlayerInterface.h" />
     <ClInclude Include="Common\Network\PlatformNetworkManagerInterface.h" />
     <ClInclude Include="Common\Network\PlatformNetworkManagerStub.h">
@@ -21566,6 +21567,7 @@ xcopy /q /y /i /s /e $(ProjectDir)Durango\CU  $(LayoutDir)Image\Loose\CU</Comman
     <ClCompile Include="ConnectScreen.cpp" />
     <ClCompile Include="KeyboardMouseInput.cpp" />
     <ClCompile Include="Windows64\Network\P2PConnectionManagerWin.cpp" />
+    <ClCompile Include="Windows64\Network\WinsockNetLayer.cpp" />
     <ClCompile Include="Common\Network\PlatformNetworkManagerStub.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ContentPackage_NO_TU|Xbox 360'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ContentPackage|Xbox 360'">true</ExcludedFromBuild>

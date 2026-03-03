@@ -328,6 +328,12 @@ void LocalPlayer::aiStep()
 		}
 	}
 	if (isSneaking()) sprintTriggerTime = 0;
+
+	if (input->sprinting && !isSprinting() && enoughFoodToSprint && !isUsingItem() && !hasEffect(MobEffect::blindness) && input->ya >= runTreshold)
+	{
+		setSprinting(true);
+	}
+
 	// 4J-PB - try not stopping sprint on collision
 	//if (isSprinting() && (input->ya < runTreshold || horizontalCollision || !enoughFoodToSprint))
 	if (isSprinting() && (input->ya < runTreshold || !enoughFoodToSprint))

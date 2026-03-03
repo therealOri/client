@@ -2971,6 +2971,9 @@
     <ClInclude Include="Windows64\Network\P2PConnectionManagerWin.h">
       <Filter>Common\Source Files\Network</Filter>
     </ClInclude>
+    <ClInclude Include="Windows64\Network\WinsockNetLayer.h">
+      <Filter>Common\Source Files\Network</Filter>
+    </ClInclude>
     <ClInclude Include="PS3\PS3Extras\EdgeZLib.h">
       <Filter>PS3\PS3Extras</Filter>
     </ClInclude>
@@ -5095,6 +5098,9 @@
       <Filter>Common\Source Files\Network</Filter>
     </ClCompile>
     <ClCompile Include="Windows64\Network\P2PConnectionManagerWin.cpp">
+      <Filter>Common\Source Files\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Windows64\Network\WinsockNetLayer.cpp">
       <Filter>Common\Source Files\Network</Filter>
     </ClCompile>
     <ClCompile Include="PS3\PS3Extras\EdgeZLib.cpp">

@@ -6,10 +6,6 @@ using namespace std;
 #include "PlatformNetworkManagerInterface.h"
 #include "SessionInfo.h"
 
-#ifdef _WINDOWS64
-#include "LANSessionManager.h"
-#endif
-
 class CPlatformNetworkManagerStub : public CPlatformNetworkManager
 {
 	friend class CGameNetworkManager;
@@ -165,16 +161,11 @@ public:
 	virtual void GetFullFriendSessionInfo( FriendSessionInfo *foundSession, void (* FriendSessionUpdatedFn)(bool success, void *pParam), void *pParam );
 	virtual void ForceFriendsSessionRefresh();
 
-private:
+public:
 	void NotifyPlayerJoined( IQNetPlayer *pQNetPlayer );
+	void NotifyPlayerLeaving( IQNetPlayer *pQNetPlayer );
 
 #ifndef _XBOX
 	void FakeLocalPlayerJoined() { NotifyPlayerJoined(m_pIQNet->GetLocalPlayerByUserIndex(0)); }
-#endif
-
-#ifdef _WINDOWS64
-	CLANSessionManager* GetLANSessionManager() { return &m_lanSessionManager; }
-private:
-	CLANSessionManager m_lanSessionManager;
 #endif
 };
