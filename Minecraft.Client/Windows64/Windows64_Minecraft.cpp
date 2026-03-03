@@ -40,6 +40,8 @@
 
 #include "Xbox/resource.h"
 
+#include "Windows64_Minecraft.h"
+
 HINSTANCE hMyInst;
 LRESULT CALLBACK DlgProc(HWND hWndDlg, UINT Msg, WPARAM wParam, LPARAM lParam);
 char chGlobalText[256];
@@ -288,6 +290,11 @@ void MemSect(int sect)
 
 HINSTANCE               g_hInst = NULL;
 HWND                    g_hWnd = NULL;
+
+HWND GetMinecraftWindowHWND()
+{
+	return g_hWnd;
+}
 
 static bool g_isFullscreen = false;
 static RECT g_windowedRect = {};

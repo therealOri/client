@@ -3658,6 +3658,9 @@
     <ClInclude Include="KeyboardMouseInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Windows64_Minecraft.h">
+      <Filter>Windows64\Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

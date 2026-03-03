@@ -9,6 +9,7 @@
 #ifdef _WINDOWS64
 #include "AchievementScreen.h"
 #include "StatsCounter.h"
+#include "Windows64_Minecraft.h"
 #endif
 #ifdef __ORBIS__
 #include <error_dialog.h>
@@ -365,6 +366,12 @@ void UIScene_MainMenu::handlePress(F64 controlId, F64 childId)
 
 		m_eAction=eAction_RunXboxHelp;
 		signInReturnedFunc = &UIScene_MainMenu::XboxHelp_SignInReturned;
+		break;
+#endif
+
+#ifdef _WINDOWS64
+	case eControl_Exit: 
+		PostMessage(GetMinecraftWindowHWND(), WM_CLOSE, 0, 0);
 		break;
 #endif
 

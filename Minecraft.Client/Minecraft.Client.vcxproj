@@ -16709,6 +16709,7 @@ xcopy /q /y /i /s /e $(ProjectDir)Durango\CU  $(LayoutDir)Image\Loose\CU</Comman
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ContentPackage_Vita|ORBIS'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="Windows64_DLCOffers.h" />
+    <ClInclude Include="Windows64_Minecraft.h" />
     <ClInclude Include="WolfModel.h" />
     <ClInclude Include="WolfRenderer.h" />
     <ClInclude Include="WstringLookup.h" />
