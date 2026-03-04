@@ -49,7 +49,7 @@ UIScene_MainMenu::UIScene_MainMenu(int iPad, void *initData, UILayer *parentLaye
 	if(ProfileManager.IsFullVersion())
 	{
 		m_bTrialVersion=false;
-		m_buttons[(int)eControl_UnlockOrDLC].init(app.GetString(IDS_DOWNLOADABLECONTENT),eControl_UnlockOrDLC);
+		m_buttons[(int)eControl_UnlockOrDLC].init(L"LCE Workshop",eControl_UnlockOrDLC);
 	}
 	else
 	{
@@ -180,7 +180,7 @@ void UIScene_MainMenu::handleGainFocus(bool navBack)
 	if(navBack && ProfileManager.IsFullVersion())
 	{
 		// Replace the Unlock Full Game with Downloadable Content
-		m_buttons[(int)eControl_UnlockOrDLC].setLabel(app.GetString(IDS_DOWNLOADABLECONTENT));
+		m_buttons[(int)eControl_UnlockOrDLC].setLabel(L"LCE Workshop");
 	}
 
 #if TO_BE_IMPLEMENTED
