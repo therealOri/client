@@ -21562,7 +21562,6 @@ xcopy /q /y /i /s /e $(ProjectDir)Durango\CU  $(LayoutDir)Image\Loose\CU</Comman
     <ClCompile Include="Common\Network\GameNetworkManager.cpp" />
     <ClCompile Include="Common\Network\NATTraversal.cpp" />
     <ClCompile Include="Common\Network\LANSessionManager.cpp" />
-    <ClCompile Include="Common\Network\PacketRouter.cpp" />
     <ClCompile Include="Common\Network\STUNClient.cpp" />
     <ClCompile Include="ConnectScreen.cpp" />
     <ClCompile Include="KeyboardMouseInput.cpp" />

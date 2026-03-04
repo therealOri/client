@@ -480,6 +480,14 @@ void CPlatformNetworkManagerStub::HandleSignInChange()
 	return;
 }
 
+void CPlatformNetworkManagerStub::SetGamePlayState()
+{
+#ifdef _WINDOWS64
+	extern QNET_STATE _iQNetStubState;
+	_iQNetStubState = QNET_STATE_GAME_PLAY;
+#endif
+}
+
 bool CPlatformNetworkManagerStub::_RunNetworkGame()
 {
 #ifdef _WINDOWS64
