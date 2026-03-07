@@ -339,5 +339,5 @@ ASALocalRun/
 
 # Release folder (thats on my computer - Whisper)
 x64_Release/
-
-
+x64_Debug/
+*.lib
