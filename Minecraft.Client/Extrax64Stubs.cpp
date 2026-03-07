@@ -835,7 +835,7 @@ void				C_4JProfile::SetTrialTextStringTable(CXuiStringTable *pStringTable,int i
 void				C_4JProfile::SetTrialAwardText(eAwardType AwardType,int iTitle,int iText) {}
 int					C_4JProfile::GetLockedProfile() { return 0; }
 void				C_4JProfile::SetLockedProfile(int iProf) {}
-bool				C_4JProfile::IsSignedIn(int iQuadrant) { return InputManager.IsPadConnected(iQuadrant); }
+bool				C_4JProfile::IsSignedIn(int iQuadrant) { return iQuadrant >= 0 && iQuadrant < 4; }
 bool				C_4JProfile::IsSignedInLive(int iProf) { return true; }
 bool				C_4JProfile::IsGuest(int iQuadrant) { return false; }
 UINT				C_4JProfile::RequestSignInUI(bool bFromInvite,bool bLocalGame,bool bNoGuestsAllowed,bool bMultiplayerSignIn,bool bAddUser, int( *Func)(LPVOID,const bool, const int iPad),LPVOID lpParam,int iQuadrant) { return 0; }
